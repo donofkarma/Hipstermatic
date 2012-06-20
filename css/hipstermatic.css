@@ -141,3 +141,14 @@ canvas {
 .controls p {
 	margin-bottom: 0;
 }
+/**
+* Draggable items
+**/
+.draggableItems {
+	
+	height: 500px;
+	border:red;
+} 
+.draggableItems img {
+	position: absolute;
+}

@@ -43,6 +43,10 @@ hipstermatic.filter = {
 			brightness: 50
 		}
 	},
+	vars: {
+		draggedItemStartX: 0,
+		draggedItemStartY: 0
+	},
 
 	apply: function(config) {
 		var canvas = document.getElementById("myCanvas"),
@@ -316,6 +320,33 @@ hipstermatic.filter = {
 		
 
 	},
+	dragStart: function(originalLeftPos, originalTopPos){
+		$("body").bind("mousemove", function(e){
+				hipstermatic.filter.setDraggableItemPosition(e, originalLeftPos, originalTopPos);
+
+			}).bind("mouseup", function(){
+				console.log("release element");
+				$(this).unbind("mousemove mouseup");
+				$(".dragging").removeClass("dragging");
+
+				//put element onto canvas
+			});
+	},
+	setDraggableItemPosition: function(e, originalLeftPos, originalTopPos){
+			//console.log("mousemove");
+			var leftPos = e.clientX - originalLeftPos;
+			var topPos = e.clientY - originalTopPos;
+			var startX = hipstermatic.filter.vars.draggedItemStartX;
+			var startY = hipstermatic.filter.vars.draggedItemStartY;
+
+			//console.log(startX);
+			//console.log(startY);
+			//console.log(leftPos);
+			//console.log(topPos);
+			
+			$(".dragging").css("left", startX + leftPos + "px");
+			$(".dragging").css("top", startY + topPos + "px");
+	},
 	bindEvents:function(){
 		var canvas = $(hipstermatic.vars.canvasSelector),
 		filterLinks = $(hipstermatic.vars.filterSelector).find("a"),
@@ -365,7 +396,21 @@ hipstermatic.filter = {
 				return false;
 			}
 		});
-		//$(".draggableItems img").bind(func)
+		$(".draggableItems img").bind("mousedown", function(e){
+			var $this = $(this);
+			//start dragging
+			console.log("start drag");
+			var originalLeftPos = e.clientX;
+			var originalTopPos = e.clientY;
+			var offset = $this.offset();
+			hipstermatic.filter.vars.draggedItemStartX = offset.left;
+			hipstermatic.filter.vars.draggedItemStartY = offset.top;
+			
+			$this.addClass("dragging");
+			hipstermatic.filter.dragStart(originalLeftPos, originalTopPos);
+
+		});
+
 		canvas.bind("revert", function (event, retainFilter){
 			var image = hipstermatic.vars.imgObject;
 			//puts back to original image
