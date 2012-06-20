@@ -365,12 +365,14 @@ hipstermatic.filter = {
 				return false;
 			}
 		});
+		//$(".draggableItems img").bind(func)
 		canvas.bind("revert", function (event, retainFilter){
 			var image = hipstermatic.vars.imgObject;
 			//puts back to original image
 			hipstermatic.vars.canvasContext.drawImage(image, 0, 0, hipstermatic.vars.canvasWidth, hipstermatic.vars.canvasHeight);
 			if(!retainFilter){filterLinks.removeClass("active");}
 		});
+
 	},
 		
 	init: function(){
