@@ -147,7 +147,7 @@ canvas {
 .draggableItems {
 	
 	height: 500px;
-	border:red;
+	border: 1px solid red;
 } 
 .draggableItems img {
 	position: absolute;

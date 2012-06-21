@@ -45,7 +45,13 @@ hipstermatic.filter = {
 	},
 	vars: {
 		draggedItemStartX: 0,
-		draggedItemStartY: 0
+		draggedItemStartY: 0,
+		canvasOffsetX: 0,
+		canvasOffetY: 0
+
+	},
+	selectors: {
+		draggedObject: "#dragging"
 	},
 
 	apply: function(config) {
@@ -278,6 +284,7 @@ hipstermatic.filter = {
 		imageData.data[index + 2] = b;
 		return imageData;
 	},
+
 	mergeFiltersSliderConfig: function(){
 		//grab last applied filter config
 		var activeFilter = $(".active");
@@ -320,14 +327,37 @@ hipstermatic.filter = {
 		
 
 	},
+	/*DRAG AND DROP FUNCTIONS*/
+	putImageToCanvas:function(evt){
+		var canvasOffsetX = hipstermatic.filter.vars.canvasOffsetX;
+		var canvasOffsetY = hipstermatic.filter.vars.canvasOffsetY;
+		var ctx = hipstermatic.vars.canvasContext;
+		var canvasWidth = hipstermatic.vars.canvasWidth;
+		var canvasHeight = hipstermatic.vars.canvasHeight;
+		//var ctx = hipstermatic.filter.vars.canvasContext;
+		var mouseX = evt.clientX;
+		var mouseY = evt.clientY;
+		var posLeft =  mouseX - canvasOffsetX;
+		var posTop =  mouseY - canvasOffsetY;
+		console.log(canvasOffsetX + " " + canvasOffsetY);
+		console.log(posTop + " " + posLeft);
+		var droppedObject = document.getElementById("dragging");
+		console.log(droppedObject);
+		ctx.drawImage(droppedObject, mouseX - canvasOffsetX, mouseY - canvasOffsetY);
+		//take ids off and put back to original position
+
+	},
 	dragStart: function(originalLeftPos, originalTopPos){
 		$("body").bind("mousemove", function(e){
 				hipstermatic.filter.setDraggableItemPosition(e, originalLeftPos, originalTopPos);
 
-			}).bind("mouseup", function(){
+			}).bind("mouseup", function(e){
+				var draggedObject = $(hipstermatic.filter.selectors.draggedObject);
 				console.log("release element");
 				$(this).unbind("mousemove mouseup");
-				$(".dragging").removeClass("dragging");
+				hipstermatic.filter.vars.isDragging = false;
+				$(draggedObject).css({"left" : "auto", "top": "auto"});
+				hipstermatic.filter.putImageToCanvas(e);
 
 				//put element onto canvas
 			});
@@ -338,21 +368,23 @@ hipstermatic.filter = {
 			var topPos = e.clientY - originalTopPos;
 			var startX = hipstermatic.filter.vars.draggedItemStartX;
 			var startY = hipstermatic.filter.vars.draggedItemStartY;
-
-			//console.log(startX);
-			//console.log(startY);
-			//console.log(leftPos);
-			//console.log(topPos);
+			var draggedObject = $(hipstermatic.filter.selectors.draggedObject);
 			
-			$(".dragging").css("left", startX + leftPos + "px");
-			$(".dragging").css("top", startY + topPos + "px");
+			draggedObject.css({"left" : startX + leftPos + "px", "top" : startY + topPos + "px"});
 	},
 	bindEvents:function(){
+		/*var sel = hipstermatic.filter.selectors,
+		vars = hipstermatic.filter.selectors,*/
 		var canvas = $(hipstermatic.vars.canvasSelector),
+
 		filterLinks = $(hipstermatic.vars.filterSelector).find("a"),
 		vingetteAdjustmentInputs = $(".vingetteAdjustment input"),
 		channelAdjustmentInputs = $(".channelAdjustment input"),
+		ctx = hipstermatic.vars.canvasContext,
 		canvasUrl;
+
+
+		
 		filterLinks.bind("click keydown", function(e) {
 			// call function to apply the filter
 			if (!e.keyCode || e.keyCode === "13"){
@@ -400,21 +432,37 @@ hipstermatic.filter = {
 			var $this = $(this);
 			//start dragging
 			console.log("start drag");
+			//var canvasOffset = canvas.offSet();
+			var canvasOffset = canvas.offset();
 			var originalLeftPos = e.clientX;
 			var originalTopPos = e.clientY;
-			var offset = $this.offset();
-			hipstermatic.filter.vars.draggedItemStartX = offset.left;
-			hipstermatic.filter.vars.draggedItemStartY = offset.top;
+			var dragOffset = $this.offset();
+			hipstermatic.filter.vars.isDragging = true;
+			hipstermatic.filter.vars.canvasOffsetX = canvasOffset.left;
+			hipstermatic.filter.vars.canvasOffsetY = canvasOffset.top;
+			hipstermatic.filter.vars.draggedItemStartX = dragOffset.left;
+			hipstermatic.filter.vars.draggedItemStartY = dragOffset.top;
 			
-			$this.addClass("dragging");
+			$this.attr("id", "dragging");
 			hipstermatic.filter.dragStart(originalLeftPos, originalTopPos);
 
 		});
+		canvas.bind("mouseenter", function(){
+			if (hipstermatic.filter.vars.isDragging){
+				//trigger droppable styling
+				$(hipstermatic.filter.vars.draggedObject).addClass("droppable");
+			}
 
-		canvas.bind("revert", function (event, retainFilter){
+			})
+			.bind("mouseleave", function(){
+				if (hipstermatic.filter.vars.isDragging){
+					$(hipstermatic.filter.vars.draggedObject).removeClass("droppable");
+				}
+			})
+			.bind("revert", function (event, retainFilter){
 			var image = hipstermatic.vars.imgObject;
 			//puts back to original image
-			hipstermatic.vars.canvasContext.drawImage(image, 0, 0, hipstermatic.vars.canvasWidth, hipstermatic.vars.canvasHeight);
+			ctx.drawImage(image, 0, 0, hipstermatic.vars.canvasWidth, hipstermatic.vars.canvasHeight);
 			if(!retainFilter){filterLinks.removeClass("active");}
 		});
 
