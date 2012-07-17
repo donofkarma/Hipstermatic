@@ -224,3 +224,12 @@ canvas {
 	top: 50%;
 	left: 50%;
 }
+/**
+borderImages
+**/
+#borderTest1 {
+	visibility: hidden;
+	position: absolute;
+	height: 1px;
+	width: 1px;
+}

@@ -29,6 +29,57 @@ hipstermatic.filter = {
 				color: "#ffffff"
 			}
 		},
+		kelvin: {
+			border: {
+				color: "#ffffff",
+				width: 20,
+				radius: 10
+				
+
+			}
+		},
+		polaroid: {
+			border: {
+				image: "images/polaroid.png"
+
+			}
+		},
+		distressed: {
+			border: {
+				color: "#ffffff",
+				width: 20,
+				radius: 10,
+				image: "images/grungeframe-black.png",
+				imageComposite: "destination-out"
+
+			}
+		},
+		distressed2: {
+			border: {
+				image: "images/grungeframe-white.png",
+				imageComposite: "destination-out"
+
+			}
+		},
+		grungy: {
+			border: {
+				color: "#000000",
+				width: 20,
+				radius: 10,
+				image: "images/grungeframe8.png"
+
+			}
+		},
+		grungy2: {
+			border: {
+				color: "#ffffff",
+				width: 20,
+				radius: 10,
+				image: "images/grungeframe8.png",
+				imageComposite: "destination-out"
+
+			}
+		},
 		sepia: {
 			sepia: true
 		},
@@ -104,9 +155,10 @@ hipstermatic.filter = {
 			this.setVingette(config, ctx, canvasWidth, canvasHeight);
 		}
 		if (config.border){
-			if (config.border.width > 0){
+			if (config.border.width > 0 || config.border.image){
 				this.setBorder(config, ctx, canvasWidth, canvasHeight);
 			}
+			
 		}
 		
 		return canvas.toDataURL(); //not sure where to put this yet but seems useful
@@ -149,12 +201,30 @@ hipstermatic.filter = {
 		var borderWidth = config.border.width,
 		borderColor = config.border.color;
 		//add some defaults
+		if (config.border.image) {
+				
+				var borderImage = document.getElementById("borderImage");
+				
+				if (config.border.imageComposite){
+					ctx.globalCompositeOperation = config.border.imageComposite;
+				}
+				$(borderImage).attr("src", config.border.image);
+				borderImage.onload = function(){
+					ctx.drawImage(borderImage, 0, 0, hipstermatic.vars.canvasWidth, hipstermatic.vars.canvasHeight);
+				};
+				
+				//interesting with this effect
+				ctx.globalCompositeOperation = "source-over";//setting back to default
+				ctx.save();
+			
+		}
 		if (config.border.radius){
 			//rounded corners
 			//cornerRadius = { upperLeft: cornerRadius, upperRight: cornerRadius, lowerLeft: cornerRadius, lowerRight: cornerRadius },
 			var radius = config.border.radius,
 			newRectWidth = borderWidth + (canvasWidth - (borderWidth*2)),
 			newRectHeight = borderWidth + (canvasHeight - (borderWidth*2));
+
 			//composite operation to clip corners
 			ctx.globalCompositeOperation = "destination-in";
 			ctx.save();
@@ -173,11 +243,14 @@ hipstermatic.filter = {
 			ctx.quadraticCurveTo(borderWidth, borderWidth, borderWidth + radius, borderWidth);
 
 			ctx.closePath();
+
 			ctx.fill();
 			//set background colour based on color supplied
-			ctx.globalCompositeOperation = "destination-over";
-			ctx.fillStyle = borderColor;
-			ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+			
+				ctx.globalCompositeOperation = "destination-over";
+				ctx.fillStyle = borderColor;
+				ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+				
 			ctx.globalCompositeOperation = "source-over"; //setting back to default
 		}
 	
